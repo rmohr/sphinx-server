@@ -20,7 +20,7 @@ import zipfile
 import StringIO
 from cgi import parse_qs, escape, FieldStorage
 import json
-from os import path, mkdir
+from os import path, mkdir, walk
 import shutil
 from static import Shock
 
@@ -62,4 +62,19 @@ class app:
             start_response('200 OK', [])
             return ""
         else:
-            return self.static_app(environ, start_response)
+            if location == "/":
+                index = self._index()
+                response_header = [('Content-Type', 'text/html'),
+                                   ('Content-Length',
+                                   str(len(index)))]
+                start_response('200 OK', response_header)
+                return index
+            else:
+                return self.static_app(environ, start_response)
+
+    def _index(self):
+        index = ["<html><head><title>Index</title></head><body>\n"]
+        for url in walk(self.home).next()[1]:
+            index.append('<a href="%s">%s</a></br>\n' % (url, url))
+        index.append("\n</body></html>")
+        return "".join(index)
