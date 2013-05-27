@@ -41,7 +41,7 @@ Browse the documentation::
 
     firefox http://127.0.0.1:8080/your_project_name/
 
-.. _Sphinx-PyPI-upload: https://pypi.python.org/pypi/Sphinx-PyPI-uploado
+.. _Sphinx-PyPI-upload: https://pypi.python.org/pypi/Sphinx-PyPI-upload
 
 pastedeploy
 -----------
