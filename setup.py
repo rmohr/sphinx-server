@@ -25,6 +25,9 @@ setup(name='sphinx-server',
       author_email='roman@fenkhuber.at',
       url='http://localhost',
       setup_requires=[],
-      requires=['static'],
+      install_requires=['static', 'setuptools'],
       packages=['sphinxserver'],
+      entry_points={
+          'paste.app_factory': ['main=sphinxserver:app_factory'],
+      },
       )

@@ -20,7 +20,7 @@ import zipfile
 import StringIO
 from cgi import parse_qs, escape, FieldStorage
 import json
-from os import path
+from os import path, mkdir
 import shutil
 from static import Shock
 
@@ -29,13 +29,14 @@ class app:
 
     def __init__(self, home, password_file=None):
         self.home = home
-        if home is None or not len(home):
-            raise Exception("Home not specified")
+        if not home:
+            self.nome = path.expanduser("~/sphinx-docs")
+        if not path.exists(self.home):
+            mkdir(self.home)
         self.static_app = Shock(self.home)
 
     def __call__(self, environ, start_response):
         status = '200 OK'
-        print environ
         location = environ["PATH_INFO"]
         if environ["REQUEST_METHOD"] == "POST":
             try:

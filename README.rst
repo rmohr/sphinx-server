@@ -41,4 +41,30 @@ Browse the documentation::
 
     firefox http://127.0.0.1:8080/your_project_name/
 
-.. _Sphinx-PyPI-upload: https://pypi.python.org/pypi/Sphinx-PyPI-upload
+.. _Sphinx-PyPI-upload: https://pypi.python.org/pypi/Sphinx-PyPI-uploado
+
+pastedeploy
+-----------
+
+Alternatively spinx-server can be run via pastedeploy. An example.ini
+might look like this::
+
+    [app:main]
+    use = egg:sphinx-server#main
+    home= ~/sphinx-docs
+
+    [server:main]
+    use = egg:gunicorn#main
+    host = 0.0.0.0
+    port = 9000
+    workers = 5
+    accesslog = -
+
+Install::
+
+    pip install gunicorn pastedeploy
+
+Run it::
+
+    gunicorn_paster example.ini
+    

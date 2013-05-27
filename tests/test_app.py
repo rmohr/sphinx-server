@@ -16,14 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
-from _app import app
-from os import path
+import pytest
+import webtest
 
 
-def app_factory(global_config, **local_conf):
-    home = local_conf.get("home")
-    if home:
-        home = home.strip()
-        if home.startswith("~"):
-            home = path.expanduser(home)
-    return app(home=home)
+@pytest.fixture
+def app(tmpdir):
+    from sphinxserver import app
+    return app(home=tmpdir.strpath)
+
+
+@pytest.fixture
+def testapp(app):
+    return webtest.TestApp(app)
