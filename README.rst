@@ -1,8 +1,9 @@
 .. -*- mode: rst; coding: utf-8 -*-
 
-====================================================================================
 sphinx-server - A minimalistic server for uploading and viewing sphinx documentation
 ====================================================================================
+
+.. image:: https://secure.travis-ci.org/rmohr/sphinx-server.png?branch=master
 
 :Authors: Roman Mohr <roman@fenkhuber.at>
 :Version: 0.1.0.a1
@@ -16,7 +17,7 @@ sphinx-server is a minimal sphinx documentation hosting server. It is
 compatible with Sphinx-PyPi-upload_.
 
 Installation and Usage
-======================
+----------------------
 
 Download a WSGI HTTP Server::
 

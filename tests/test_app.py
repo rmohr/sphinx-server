@@ -29,3 +29,7 @@ def app(tmpdir):
 @pytest.fixture
 def testapp(app):
     return webtest.TestApp(app)
+
+
+def test_testapp(testapp):
+    pass
