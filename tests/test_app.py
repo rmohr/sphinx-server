@@ -18,6 +18,10 @@
 
 import pytest
 import webtest
+from webtest.forms import Form
+from static import Shock
+from zipfile import ZipFile
+import os
 
 
 @pytest.fixture
@@ -31,5 +35,26 @@ def testapp(app):
     return webtest.TestApp(app)
 
 
-def test_testapp(testapp):
-    pass
+def test_nozip_upload(testapp, tmpdir):
+    tmpfile = tmpdir.join("test.txt")
+    tmpfile.write("test")
+    res = testapp.post("/", {':action': 'doc_upload', 'name': 'test.txt'},
+                       upload_files=[("content", tmpfile.strpath)], status=400)
+
+
+def test_zip_upload(testapp, tmpdir):
+    os.chdir(tmpdir.strpath)
+    tmpfile = tmpdir.join("test.txt")
+    tmpfile.write("hello world\n")
+    zf = tmpdir.join("test.zip").strpath
+    zipfile = ZipFile(zf, 'w')
+    try:
+        zipfile.write("test.txt")
+    except:
+        zipfile.close()
+        raise
+    zipfile.close()
+    res = testapp.post(
+        "/", {':action': 'doc_upload', 'name': 'test'}, upload_files=[("content", zf)])
+    assert "test" in testapp.get("/")
+    assert "hello world" in testapp.get("/test/test.txt")

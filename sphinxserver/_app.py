@@ -36,7 +36,6 @@ class app:
         self.static_app = Shock(self.home)
 
     def __call__(self, environ, start_response):
-        status = '200 OK'
         location = environ["PATH_INFO"]
         if environ["REQUEST_METHOD"] == "POST":
             try:
@@ -48,27 +47,34 @@ class app:
             sphinx_docu = FieldStorage(fp=request_body, environ=environ)
             if sphinx_docu.getvalue(":action") != "doc_upload":
                 start_response('400 Bad Request', [])
-                return ""
+                return [""]
             stream = StringIO.StringIO(sphinx_docu.getvalue("content"))
-            archive = zipfile.ZipFile(stream, "r")
+            try:
+                archive = zipfile.ZipFile(stream, "r")
+            except zipfile.BadZipfile:
+                start_response('400 File is not a zip file', [])
+                return [""]
+            if archive.testzip():
+                start_response('400 Zip file is not sane', [])
+                return [""]
             location = path.join(self.home, sphinx_docu.getvalue("name"))
             real_location = path.realpath(location)
             if not real_location.startswith(path.realpath(self.home)):
                 start_response('404 Forbidden', [])
-                return ""
+                return [""]
             if path.exists(location):
                 shutil.rmtree(location)
             archive.extractall(location)
             start_response('200 OK', [])
-            return ""
+            return [""]
         else:
             if location == "/":
                 index = self._index()
                 response_header = [('Content-Type', 'text/html'),
                                    ('Content-Length',
-                                   str(len(index)))]
+                                    str(len(index)))]
                 start_response('200 OK', response_header)
-                return index
+                return [index]
             else:
                 return self.static_app(environ, start_response)
 
