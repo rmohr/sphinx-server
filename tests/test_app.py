@@ -19,7 +19,6 @@
 import pytest
 import webtest
 from webtest.forms import Form
-from static import Shock
 from zipfile import ZipFile
 import os
 
@@ -27,7 +26,7 @@ import os
 @pytest.fixture
 def app(tmpdir):
     from sphinxserver import app
-    return app(home=tmpdir.strpath)
+    return app(home=tmpdir.join("root").strpath)
 
 
 @pytest.fixture
@@ -35,26 +34,59 @@ def testapp(app):
     return webtest.TestApp(app)
 
 
-def test_nozip_upload(testapp, tmpdir):
-    tmpfile = tmpdir.join("test.txt")
-    tmpfile.write("test")
-    res = testapp.post("/", {':action': 'doc_upload', 'name': 'test.txt'},
-                       upload_files=[("content", tmpfile.strpath)], status=400)
-
-
-def test_zip_upload(testapp, tmpdir):
+def simple_zip(tmpdir):
     os.chdir(tmpdir.strpath)
     tmpfile = tmpdir.join("test.txt")
     tmpfile.write("hello world\n")
-    zf = tmpdir.join("test.zip").strpath
-    zipfile = ZipFile(zf, 'w')
+    zipfile_path = tmpdir.join("test.zip").strpath
+    zipfile = ZipFile(zipfile_path, 'w')
     try:
         zipfile.write("test.txt")
     except:
         zipfile.close()
         raise
     zipfile.close()
+    return zipfile_path
+
+
+def test_bad_request(testapp):
+    res = testapp.post("/", {':action': 'doc_uploadXXX', 'name': 'test.txt'},
+                       upload_files=[("content", "test.zip", "hello world")], status=400)
+    assert "Bad Request" in str(res)
+
+
+def test_nozip_upload(testapp, tmpdir):
+    tmpfile = tmpdir.join("test.txt")
+    tmpfile.write("test")
+    res = testapp.post("/", {':action': 'doc_upload', 'name': 'test.txt'},
+                       upload_files=[("content", tmpfile.strpath)], status=400)
+    assert "not a zip file" in str(res)
+    assert "test" not in testapp.get("/")
+
+
+def test_invalid_zip_upload(testapp, tmpdir):
+    zipfile = simple_zip(tmpdir)
+    stream = open(zipfile, 'rb')
+    content = stream.read()
+    content = content[1:]
     res = testapp.post(
-        "/", {':action': 'doc_upload', 'name': 'test'}, upload_files=[("content", zf)])
+        "/", {':action': 'doc_upload', 'name': 'test'},
+        upload_files=[("content", zipfile, content)], status=400)
+    assert "not sane" in str(res)
+    assert "test" not in testapp.get("/")
+
+
+def test_zip_upload(testapp, tmpdir):
+    zipfile = simple_zip(tmpdir)
+    res = testapp.post(
+        "/", {':action': 'doc_upload', 'name': 'test'},
+        upload_files=[("content", zipfile)])
     assert "test" in testapp.get("/")
     assert "hello world" in testapp.get("/test/test.txt")
+
+
+def test_app_factory():
+    from sphinxserver import app_factory
+    app = app_factory(None, home="~/")
+    testapp = webtest.TestApp(app)
+    testapp.get("/")

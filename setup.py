@@ -25,7 +25,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['tests']
+        self.test_args = ['--cov', 'sphinxserver' , 'tests']
         self.test_suite = True
 
     def run_tests(self):
@@ -42,7 +42,7 @@ setup(name='sphinx-server',
       url='https://github.com/rmohr/sphinx-server',
       setup_requires=[],
       install_requires=['static', 'setuptools'],
-      tests_require=['pytest', 'webtest'],
+      tests_require=['pytest', 'webtest', 'pytest-cov'],
       cmdclass={'test': PyTest},
       packages=['sphinxserver'],
       entry_points={
