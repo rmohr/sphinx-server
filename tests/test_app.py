@@ -51,7 +51,7 @@ def simple_zip(tmpdir):
 
 def test_bad_request(testapp):
     res = testapp.post("/", {':action': 'doc_uploadXXX', 'name': 'test.txt'},
-                       upload_files=[("content", "test.zip", "hello world")], status=400)
+                       upload_files=[("content", "test.zip", b"hello world")], status=400)
     assert "Bad Request" in str(res)
 
 
@@ -68,11 +68,32 @@ def test_invalid_zip_upload(testapp, tmpdir):
     zipfile = simple_zip(tmpdir)
     stream = open(zipfile, 'rb')
     content = stream.read()
-    content = content[1:]
+    if type(content) != type(""): #python3
+        faulty_char = content[0] + 1
+        content = list(content)
+        content[0] = faulty_char
+        content = bytes(content)
+    else: #python2
+        faulty_char = chr(ord(content[0])+1)
+        content = list(content)
+        content[0] = faulty_char
+        content = ''.join(content)
     res = testapp.post(
         "/", {':action': 'doc_upload', 'name': 'test'},
         upload_files=[("content", zipfile, content)], status=400)
     assert "not sane" in str(res)
+    assert "test" not in testapp.get("/")
+
+
+def test_too_short_zip_upload(testapp, tmpdir):
+    zipfile = simple_zip(tmpdir)
+    stream = open(zipfile, 'rb')
+    content = stream.read()
+    content = content[1:]
+    res = testapp.post(
+        "/", {':action': 'doc_upload', 'name': 'test'},
+        upload_files=[("content", zipfile, content)], status=400)
+    assert "Unexpected end" in str(res)
     assert "test" not in testapp.get("/")
 
 

@@ -17,7 +17,10 @@
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
 import zipfile
-import StringIO
+try:
+    from io import BytesIO
+except ImportError:
+    from StringIO import StringIO as BytesIO
 from cgi import parse_qs, escape, FieldStorage
 import json
 from os import path, mkdir, walk
@@ -42,31 +45,36 @@ class app:
                 request_body_size = int(environ.get('CONTENT_LENGTH', 0))
             except (ValueError):
                 request_body_size = 0
-            request_body = StringIO.StringIO(
+            request_body = BytesIO(
                 environ['wsgi.input'].read(request_body_size))
             sphinx_docu = FieldStorage(fp=request_body, environ=environ)
             if sphinx_docu.getvalue(":action") != "doc_upload":
                 start_response('400 Bad Request', [])
-                return [""]
-            stream = StringIO.StringIO(sphinx_docu.getvalue("content"))
+                return [b""]
+            stream = BytesIO(sphinx_docu.getvalue("content"))
             try:
                 archive = zipfile.ZipFile(stream, "r")
             except zipfile.BadZipfile:
                 start_response('400 File is not a zip file', [])
-                return [""]
-            if archive.testzip():
-                start_response('400 Zip file is not sane', [])
-                return [""]
+                return [b""]
+            try:
+                if archive.testzip():
+                    start_response('400 Zip file is not sane', [])
+                    return [b""]
+            except ValueError:
+                start_response('400 Unexpected end of Zipfile', [])
+                return [b""]
+
             location = path.join(self.home, sphinx_docu.getvalue("name"))
             real_location = path.realpath(location)
             if not real_location.startswith(path.realpath(self.home)):
                 start_response('404 Forbidden', [])
-                return [""]
+                return [b""]
             if path.exists(location):
                 shutil.rmtree(location)
             archive.extractall(location)
             start_response('200 OK', [])
-            return [""]
+            return [b""]
         else:
             if location == "/":
                 index = self._index()
@@ -74,13 +82,13 @@ class app:
                                    ('Content-Length',
                                     str(len(index)))]
                 start_response('200 OK', response_header)
-                return [index]
+                return [index.encode("utf-8")]
             else:
                 return self.static_app(environ, start_response)
 
     def _index(self):
         index = ["<html><head><title>Index</title></head><body>\n"]
-        for url in walk(self.home).next()[1]:
+        for url in next(walk(self.home))[1]:
             index.append('<a href="%s">%s</a></br>\n' % (url, url))
         index.append("\n</body></html>")
         return "".join(index)
