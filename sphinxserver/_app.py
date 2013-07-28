@@ -25,7 +25,7 @@ from cgi import parse_qs, escape, FieldStorage
 import json
 from os import path, mkdir, walk
 import shutil
-from static import Shock
+from static import Cling
 
 
 class app:
@@ -36,7 +36,7 @@ class app:
             self.nome = path.expanduser("~/sphinx-docs")
         if not path.exists(self.home):
             mkdir(self.home)
-        self.static_app = Shock(self.home)
+        self.static_app = Cling(self.home)
 
     def __call__(self, environ, start_response):
         location = environ["PATH_INFO"]
