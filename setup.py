@@ -50,10 +50,10 @@ setup(name='sphinx-server',
           'paste.app_factory': ['main=sphinxserver:app_factory'],
       },
       keywords="wsgi sphinx documentation server webapps",
-      classifiers=['Development Status :: 1 - Beta',
+      classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Web Environment',
                    'Intended Audience :: Developers',
-                   'License :: OSI Approved :: GNU Library or '
+                   'License :: OSI Approved :: '
                    'GNU General Public License v3 (GPLv3)',
                    'Natural Language :: English',
                    'Operating System :: OS Independent',
