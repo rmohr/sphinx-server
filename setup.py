@@ -35,8 +35,9 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 setup(name='sphinx-server',
-      version='0.1.0a1',
+      version='0.1.0',
       description='simple wsgi spinx server',
+      long_description=open('README.rst').read(),
       author='Roman Mohr',
       author_email='roman@fenkhuber.at',
       url='https://github.com/rmohr/sphinx-server',
@@ -48,4 +49,15 @@ setup(name='sphinx-server',
       entry_points={
           'paste.app_factory': ['main=sphinxserver:app_factory'],
       },
+      keywords="wsgi sphinx documentation server webapps",
+      classifiers=['Development Status :: 1 - Beta',
+                   'Environment :: Web Environment',
+                   'Intended Audience :: Developers',
+                   'License :: OSI Approved :: GNU Library or '
+                   'GNU General Public License v3 (GPLv3)',
+                   'Natural Language :: English',
+                   'Operating System :: OS Independent',
+                   'Programming Language :: Python',
+                   'Topic :: Software Development :: Documentation',
+                   'Topic :: Utilities']
       )

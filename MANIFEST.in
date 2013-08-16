@@ -1,1 +1,2 @@
 include tests/*
+include README.rst
