@@ -33,7 +33,7 @@ class app:
     def __init__(self, home, password_file=None):
         self.home = home
         if not home:
-            self.nome = path.expanduser("~/sphinx-docs")
+            self.home = path.expanduser("~/sphinx-docs")
         if not path.exists(self.home):
             mkdir(self.home)
         self.static_app = Cling(self.home)
